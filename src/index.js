@@ -108,8 +108,6 @@ class GhostGateway extends EventEmitter {
   }
 
   processEvent (event) {
-    console.log(event)
-    // if (event.d) { event.d['shard_id'] = event.shard_id }
     return this.emit(event.t, event.d)
   }
 }
