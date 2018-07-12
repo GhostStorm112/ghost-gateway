@@ -72,7 +72,7 @@ class GhostGateway extends EventEmitter {
     app.use(bodyParser.urlencoded({extended: true}))
     app.use(bodyParser.json())
     app.use((req, res, next) => {
-      req.bot = options.bot
+      req.bot = this.bot
       next()
     })
     app.use('/shards', shardRouter)
