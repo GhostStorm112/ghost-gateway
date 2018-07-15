@@ -31,16 +31,10 @@ class GhostGateway extends EventEmitter {
       eventPath: path.join(__dirname, './eventHandlers/')
     }, options)
 
-    this.redis = new Cache({
-      port: 6379,
-      host: options.redisUrl,
-      db: 2
-    })
-    console.log(options.redisUrl)
     this.cache = new Cache({
       port: 6379,
       host: options.redisUrl,
-      db: 3
+      db: 0
     })
 
     this.lavalink = new GhostCore.LavalinkGatway({
@@ -48,7 +42,7 @@ class GhostGateway extends EventEmitter {
       password: options.lavalinkPassword,
       rest: options.lavalinkRest,
       ws: options.lavalinkWs,
-      redis: this.redis,
+      redis: this.cache,
       gateway: this.discordConnector
     })
 
