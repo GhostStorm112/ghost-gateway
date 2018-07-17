@@ -2,7 +2,7 @@ require('bluebird')
 require('dotenv').config()
 
 const EventEmitter = require('eventemitter3')
-const GhostCore = require('ghost-core')
+const GhostCore = require('../../ghost-core')
 const path = require('path')
 const { default: Cache } = require('@spectacles/cache')
 const bodyParser = require('body-parser')
@@ -56,9 +56,9 @@ class GhostGateway extends EventEmitter {
     })
 
     this.bot = new CloudStorm(options.token, {
-      firstShardId: options.firstShard || 0,
-      lastShardId: options.lastShard || (options.numShards ? options.numShards - 1 : 0),
-      shardAmount: options.numShards || (options.firstShard && options.lastShard ? options.lastShard - options.firstShard + 1 : 1)
+      firstShardId: options.firstShard,
+      lastShardId: options.lastShard,
+      shardAmount: options.numShards
     })
 
     this.eventHandlers = new Map()
@@ -79,9 +79,9 @@ class GhostGateway extends EventEmitter {
 
   async initialize () {
     await this.loadRequestHandlers()
-    await this.discordConnector.initialize()
-    await this.workerConnector.initialize()
     await this.bot.connect()
+    await this.discordConnector.initialize(this.bot.shardManager.shards)
+    await this.workerConnector.initialize()
     this.discordConnector.on('event', event => this.processEvent(event))
   }
 

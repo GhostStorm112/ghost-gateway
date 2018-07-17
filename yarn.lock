@@ -78,6 +78,12 @@ amqp@0.2.6:
   dependencies:
     lodash "^4.0.0"
 
+amqp@^0.2.7:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/amqp/-/amqp-0.2.7.tgz#738cfc45fd9c99260b45d5fafc32ed000841e1b1"
+  dependencies:
+    lodash "^4.0.0"
+
 amqplib@^0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/amqplib/-/amqplib-0.5.2.tgz#d2d7313c7ffaa4d10bcf1e6252de4591b6cc7b63"
