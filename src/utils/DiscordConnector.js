@@ -25,7 +25,7 @@ class AmqpConnector extends EventEmitter {
   async loadShardQueues (shards, channel, amq) {
     Object.keys(shards).forEach(function (shard) {
       var _shard = shards[shard]
-      console.log(`shard-${_shard.id} queue connected`)
+      console.log(`shard-${_shard.id} queue`)
       channel.assertQueue(`shard-${_shard.id}`, { durable: false, messageTtl: 60e3 })
       channel.consume(`shard-${_shard.id}`, async event => {
         await channel.ack(event)
