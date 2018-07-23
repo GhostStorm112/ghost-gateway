@@ -5,14 +5,8 @@ const EventEmitter = require('eventemitter3')
 const GhostCore = require('../../ghost-core')
 const path = require('path')
 const { default: Cache } = require('@spectacles/cache')
-const bodyParser = require('body-parser')
-const express = require('express')
-const app = express()
 const DiscordConnector = require('./utils/DiscordConnector')
 const WorkerConnector = require('./utils/WorkerConnector')
-
-const gatewayRouter = require('./routes/gatewayRoutes')
-const shardRouter = require('./routes/shardStatusRoutes')
 const StatsD = require('hot-shots')
 const CloudStorm = require('Cloudstorm')
 const promisifyAll = require('tsubaki').promisifyAll
@@ -62,19 +56,6 @@ class GhostGateway extends EventEmitter {
     })
 
     this.eventHandlers = new Map()
-
-    app.use(bodyParser.urlencoded({extended: true}))
-    app.use(bodyParser.json())
-    app.use((req, res, next) => {
-      req.bot = this.bot
-      next()
-    })
-    app.use('/shards', shardRouter)
-    app.use('/gateway', gatewayRouter)
-    app.all('/', (req, res) => {
-      res.json({version: '0.1', gatewayVersion: '0.1'})
-    })
-    app.listen(options.gwPort, options.gwHost)
   }
 
   async initialize () {
