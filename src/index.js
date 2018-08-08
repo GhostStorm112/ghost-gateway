@@ -2,7 +2,7 @@ require('bluebird')
 require('dotenv').config()
 
 const EventEmitter = require('eventemitter3')
-const GhostCore = require('../../ghost-core')
+const GhostCore = require('ghost-core')
 const path = require('path')
 const { default: Cache } = require('@spectacles/cache')
 const DiscordConnector = require('./utils/DiscordConnector')
