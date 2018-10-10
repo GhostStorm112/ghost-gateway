@@ -24,7 +24,7 @@ class GhostGateway extends EventEmitter {
       camelCaseEvents: false,
       eventPath: path.join(__dirname, './eventHandlers/')
     }, options)
-
+    this.statsEnabled = Boolean(options.stats)
     this.cache = new Cache({
       port: 6379,
       host: options.redisUrl,

@@ -1,0 +1,16 @@
+{
+  "extends": ["standard", "eslint:recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "indent": "error",
+    "curly": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "callback-return": "error"
+  }
+}
