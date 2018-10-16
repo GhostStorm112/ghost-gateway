@@ -9,16 +9,16 @@ class AmqpConnector extends EventEmitter {
     this.channel = null
   }
 
-  async initialize (shards) {
+  async initialize (id) {
     this.connection = await amqp.connect(this.client.options.amqpUrl || 'amqp://localhost')
     this.channel = await this.connection.createChannel()
 
-    this.channel.assertQueue('weather-gateway-requests', { durable: false, messageTtl: 60e3 })
-    this.channel.consume('weather-gateway-requests', async event => {
+    this.channel.assertQueue(id, { durable: false, messageTtl: 60e3 })
+    this.channel.consume(id, async event => {
       await this.channel.ack(event)
       this.emit('event', JSON.parse(event.content.toString()))
     })
-    this.loadShardQueues(shards, this.channel, this)
+    // this.loadShardQueues(shards, this.channel, this)
     this.emit('ready')
   }
 

@@ -11,11 +11,11 @@ const StatsD = require('hot-shots')
 const CloudStorm = require('Cloudstorm')
 const promisifyAll = require('tsubaki').promisifyAll
 const fs = promisifyAll(require('fs'))
-
+const uniqid = require('uniqid')
 class GhostGateway extends EventEmitter {
   constructor (options = { }) {
     super()
-
+    this.id = uniqid.process()
     this.discordConnector = new DiscordConnector(this)
     this.workerConnector = new WorkerConnector(this)
 
@@ -61,7 +61,7 @@ class GhostGateway extends EventEmitter {
   async initialize () {
     await this.loadRequestHandlers()
     await this.bot.connect()
-    await this.discordConnector.initialize(this.bot.shardManager.shards)
+    await this.discordConnector.initialize(this.id)
     await this.workerConnector.initialize()
     this.discordConnector.on('event', event => this.processEvent(event))
   }
