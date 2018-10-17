@@ -64,6 +64,11 @@ class GhostGateway extends EventEmitter {
     await this.discordConnector.initialize(this.id)
     await this.workerConnector.initialize()
     this.discordConnector.on('event', event => this.processEvent(event))
+    
+    this.lavalink.on('error', (d) => {
+      this.log.error('Lavalink', d)
+      this.log.info('Lavalink', 'Waiting for reconnect')
+    })
   }
 
   async loadRequestHandlers () {
