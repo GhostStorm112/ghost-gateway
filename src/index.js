@@ -51,7 +51,7 @@ class GhostGateway extends EventEmitter {
 
     this.bot = new CloudStorm(options.token, {
       firstShardId: options.firstShard,
-      lastShardId: options.lastShard,
+      lastShardId: options.numShards -1 ,
       shardAmount: options.numShards
     })
 
