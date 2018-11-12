@@ -71,7 +71,6 @@ class GhostGateway extends EventEmitter {
       this.emit(event.t, event.d)
     })
     this.bot.on('event', event => {
-      event.d['t'] = event.t
       this.emit(event.t, event)
     })
     this.bot.on('shardReady', event => {
