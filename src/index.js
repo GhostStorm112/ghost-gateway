@@ -56,28 +56,56 @@ class GhostGateway extends EventEmitter {
     })
 
     this.eventHandlers = new Map()
+    this.requestHandlers = new Map()
+
   }
 
   async initialize () {
     await this.loadRequestHandlers()
+    await this.loadEventHandlers()
     await this.bot.connect()
     await this.discordConnector.initialize(this.id)
     await this.workerConnector.initialize()
-    this.discordConnector.on('event', event => this.processEvent(event))
-    
+
+    this.discordConnector.on('event', event => {
+      this.emit(event.t, event.d)
+    })
+    this.bot.on('event', event => {
+      event.d['t'] = event.t
+      this.emit(event.t, event)
+    })
+    this.bot.on('shardReady', event => {
+      this.emit('SHARD_READY', event)
+    })
     this.lavalink.on('error', (d) => {
       this.log.error('Lavalink', d)
       this.log.info('Lavalink', 'Waiting for reconnect')
     })
   }
 
-  async loadRequestHandlers () {
+  async loadEventHandlers () {
     const files = await fs.readdirAsync(this.options.eventPath)
     for (const file of files) {
       if (!file.endsWith('.js') || file.includes(' ')) { continue }
 
       const handler = new (require(this.options.eventPath + file))(this)
       this.eventHandlers.set(handler.name, handler)
+      this.log.debug('E-Loader', `Handler ${handler.name} loaded`)
+
+      if (typeof handler.init === 'function') { await handler.init() }
+
+      for (const event of handler.canHandle) { this.on(event, handler.handle.bind(handler)) }
+    }
+  }
+
+  async loadRequestHandlers () {
+    const files = await fs.readdirAsync(this.options.requestPath)
+    for (const file of files) {
+      if (!file.endsWith('.js') || file.includes(' ')) { continue }
+
+      const handler = new (require(this.options.requestPath + file))(this)
+      this.requestHandlers.set(handler.name, handler)
+      this.log.debug('R-Loader', `Handler ${handler.name} loaded`)
 
       if (typeof handler.init === 'function') { await handler.init() }
 
@@ -85,10 +113,6 @@ class GhostGateway extends EventEmitter {
         this.on(event, handler.handle.bind(handler))
       }
     }
-  }
-
-  processEvent (event) {
-    return this.emit(event.t, event.d)
   }
 }
 
