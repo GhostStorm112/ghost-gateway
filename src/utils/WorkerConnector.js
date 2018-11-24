@@ -28,8 +28,6 @@ class AmqpConnector extends EventEmitter {
       this.client.log.info('AMQP-W', 'Connected!')
 
     }.bind(this))
-
-    this.emit('ready')
   }
 
   async sendToQueue (event) {

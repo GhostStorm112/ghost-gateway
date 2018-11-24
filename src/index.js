@@ -76,6 +76,11 @@ class GhostGateway extends EventEmitter {
     this.bot.on('shardReady', event => {
       this.emit('SHARD_READY', event)
     })
+
+    this.bot.on('ready', event => {
+      this.emit('STARTED', event)
+    })
+
     this.lavalink.on('error', (d) => {
       this.log.error('Lavalink', d)
       this.log.info('Lavalink', 'Waiting for reconnect')
