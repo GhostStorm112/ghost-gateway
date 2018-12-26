@@ -30,7 +30,8 @@ class GhostGateway extends EventEmitter {
       host: options.redisUrl,
       db: 0
     })
-
+    
+    
     this.lavalink = new GhostCore.LavalinkGatway({
       user: options.botId,
       password: options.lavalinkPassword,
@@ -39,7 +40,11 @@ class GhostGateway extends EventEmitter {
       redis: this.cache,
       gateway: this.discordConnector
     })
-
+    
+    this.lavalink.on('error', (d) => {
+      this.log.error('Lavalink', d)
+      this.log.info('Lavalink', 'Waiting for reconnect')
+    })
     this.log = new GhostCore.Logger()
 
     this.stats = new StatsD({
@@ -78,11 +83,6 @@ class GhostGateway extends EventEmitter {
 
     this.bot.on('ready', event => {
       this.emit('STARTED', event)
-    })
-
-    this.lavalink.on('error', (d) => {
-      this.log.error('Lavalink', d)
-      this.log.info('Lavalink', 'Waiting for reconnect')
     })
   }
 
