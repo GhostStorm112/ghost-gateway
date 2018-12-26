@@ -61,12 +61,11 @@ class GhostGateway extends EventEmitter {
   }
 
   async initialize () {
-    await this.loadRequestHandlers()
-    await this.loadEventHandlers()
     await this.bot.connect()
     await this.discordConnector.initialize(this.id)
     await this.workerConnector.initialize()
-
+    await this.loadRequestHandlers()
+    await this.loadEventHandlers()
     this.discordConnector.on('event', event => {
       this.emit(event.t, event.d)
     })
