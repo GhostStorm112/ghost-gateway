@@ -2,11 +2,12 @@ require('bluebird')
 require('dotenv').config()
 
 const EventEmitter = require('eventemitter3')
-const GhostCore = require('ghost-core')
+const GhostCore = require('../../Core')
 const path = require('path')
 const { default: Cache } = require('@spectacles/cache')
 const DiscordConnector = require('./utils/DiscordConnector')
 const WorkerConnector = require('./utils/WorkerConnector')
+const Websocket = require('./utils/Websocket')
 const StatsD = require('hot-shots')
 const CloudStorm = require('Cloudstorm')
 const promisifyAll = require('tsubaki').promisifyAll
@@ -16,27 +17,33 @@ class GhostGateway extends EventEmitter {
   constructor (options = { }) {
     super()
     this.id = uniqid.process()
+    this.started = false
     this.discordConnector = new DiscordConnector(this)
     this.workerConnector = new WorkerConnector(this)
+    this.websocket = new Websocket(this)
 
     this.options = Object.assign({
       disabledEvents: null,
       camelCaseEvents: false,
       eventPath: path.join(__dirname, './eventHandlers/')
     }, options)
-
+    this.token = options.token
     this.cache = new Cache({
       port: 6379,
       host: options.redisUrl,
       db: 0
     })
     
-    
+    this.bot = null
     this.lavalink = new GhostCore.LavalinkGatway({
       user: options.botId,
       password: options.lavalinkPassword,
       rest: options.lavalinkRest,
       ws: options.lavalinkWs,
+      wsurl: options.lavalinkWs,
+      resumeID: (async () => {
+        await this.cache.storage.get('connection-id')
+      })(),
       redis: this.cache,
       gateway: this.discordConnector
     })
@@ -54,36 +61,48 @@ class GhostGateway extends EventEmitter {
       telegraf: true
     })
 
-    this.bot = new CloudStorm(options.token, {
-      firstShardId: options.firstShard,
-      lastShardId: options.lastShard,
-      shardAmount: options.numShards
-    })
-
     this.eventHandlers = new Map()
     this.requestHandlers = new Map()
 
   }
 
   async initialize () {
-    await this.bot.connect()
-    await this.discordConnector.initialize(this.id)
-    await this.workerConnector.initialize()
-    await this.loadRequestHandlers()
-    await this.loadEventHandlers()
+    this.websocket.initialize()
+    this.discordConnector.initialize(this.id)
+    this.workerConnector.initialize()
     this.discordConnector.on('event', event => {
       this.emit(event.t, event.d)
     })
-    this.bot.on('event', event => {
-      this.emit(event.t, event)
-    })
-    this.bot.on('shardReady', event => {
-      this.emit('SHARD_READY', event)
+    await this.websocket.on('gateway-start', event => {
+
+      if(this.started == false){
+        this.started == true
+        this.bot = new CloudStorm(this.token, {
+          firstShardId: event.firstId,
+          lastShardId: event.lastId,
+          shardAmount: event.shardAmount
+        })
+        this.bot.connect()
+        
+        this.loadRequestHandlers()
+        this.loadEventHandlers()
+        this.bot.on('event', event => {
+          this.emit(event.t, event)
+        })
+        this.bot.on('shardReady', event => {
+          this.emit('SHARD_READY', event)
+        })
+    
+        this.bot.on('ready', event => {
+          this.emit('STARTED', event)
+        })
+        
+      } else {
+        this.log.info('Gateway', 'Gateway already started ignoring')
+      }
     })
 
-    this.bot.on('ready', event => {
-      this.emit('STARTED', event)
-    })
+
   }
 
   async loadEventHandlers () {
